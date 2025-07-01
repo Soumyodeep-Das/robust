@@ -5,10 +5,10 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "init": "node cli/init.js"
   },
   "bin": {
-    "robust": "./cli/index.js"
+    "robust": "./bin/robust.js"
   },
   "repository": {
     "type": "git",
