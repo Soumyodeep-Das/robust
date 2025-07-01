@@ -3,8 +3,12 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "bin": {
+    "robust": "./cli/index.js"
   },
   "repository": {
     "type": "git",
@@ -17,6 +21,9 @@
   },
   "homepage": "https://github.com/Soumyodeep-Das/robust#readme",
   "dependencies": {
+    "@azure-rest/ai-inference": "latest",
+    "@azure/core-auth": "latest",
+    "@azure/core-sse": "latest",
     "axios": "^1.10.0",
     "chalk": "^5.4.1",
     "dotenv": "^17.0.0",
