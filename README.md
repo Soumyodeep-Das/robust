@@ -1,165 +1,142 @@
 # Robust
 
-> AI-powered Unit Test Generator for C/C++ Codebases
+> 🧠 AI-powered Unit Test Generator for C/C++ Codebases
 
-[![License](https://img.shields.io/github/license/yourname/robust?style=flat-square)](LICENSE)
-[![Node.js](https://img.shields.io/badge/node-%3E%3D18-blue?logo=node.js\&style=flat-square)](https://nodejs.org/)
+[![License](https://img.shields.io/github/license/Soumyodeep-Das/robust?style=flat-square)](LICENSE)
+[![Node.js](https://img.shields.io/badge/node-%3E%3D18-blue?logo=node.js&style=flat-square)](https://nodejs.org/)
 [![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat-square)](CONTRIBUTING.md)
 
-Robust is a powerful, CLI-based AI tool to automatically generate unit tests for your C and C++ projects. It uses state-of-the-art LLMs (hosted via GitHub's model marketplace) to analyze source code and generate comprehensive, edge-case focused test files using GoogleTest. The project also integrates logging, retry flows, build automation, and optional test execution with [Keploy](https://keploy.io).
+**Robust** is a powerful CLI tool that automatically generates GoogleTest-compatible unit tests for your C and C++ projects using LLMs hosted via GitHub’s model marketplace.  
+Built for automation, edge-case coverage, and modern dev flows.
 
 ---
 
 ## 🚀 Features
 
-* ✨ AI-powered unit test generation (via GitHub Model Inference API)
-* ✍ GoogleTest compatible test files
-* ⌚ Support for `.c` and `.cpp` files
-* ▶ CLI-based interactive prompts
-* 🌐 Local or global install via `robust init`
-* 🔄 Retry mechanism from logs
-* ⚒ Optional integration with Keploy for automated test validation
-* ✅ Makefile-based test builds
+- ✨ AI-powered unit test generation
+- 🧪 Generates `test_*.cpp` files using **GoogleTest**
+- ⌨️ Works with `.c` and `.cpp` codebases
+- 💬 Interactive CLI via `inquirer`
+- 🔁 Retry failed builds using logs
+- ⚙️ Optional **Keploy** integration for test validation
+- 🛠 Makefile support for building tests
+- 🔐 GitHub Model Inference API integration
 
 ---
 
-## 🧠 Technologies Used
+## 🧠 Tech Stack
 
-* **Node.js** for CLI backend
-* **Inquirer.js** for interactive prompts
-* **@azure-rest/ai-inference** for LLM API calls
-* **dotenv** for environment config
-* **fs-extra** for file ops
-* **GoogleTest (gtest)** for C++ unit testing
-* **Keploy** for capturing API-level test cases (optional)
+| Layer            | Technology                     |
+|------------------|-------------------------------|
+| CLI Interface    | Node.js + Inquirer.js         |
+| AI Inference     | GitHub Models via Azure SDK   |
+| Env Handling     | dotenv                         |
+| File Ops         | fs-extra                       |
+| C++ Test Engine  | GoogleTest (gtest)             |
+| Optional Testing | Keploy                         |
 
 ---
 
-## 📂 Directory Structure
+## 📦 Quickstart
+
+### ✅ Clone and Initialize
 
 ```bash
-robust/
-├── bin/                  # Entry point for CLI (robust command)
-├── cli/                  # CLI command logic
-│   ├── index.js          # Main CLI dispatcher
-│   ├── init.js           # Local/global install logic
-│   └── commands/         # Subcommands: generate, run, retry...
-├── utils/                # Prompt builder, API client, log utils
-├── tests/                # Generated test_*.cpp files
-├── logs/                 # build.log and retry logs
-├── src/                  # Your C/C++ source files
-├── Makefile              # Build & test runner
-├── .env                  # GitHub token for inference
-├── package.json          # NPM project config
-└── README.md             # You're here
-```
-
----
-
-## 📦 Installation & Setup
-
-### 1. Clone Repository
-
-```bash
-git clone https://github.com/yourname/robust.git
+git clone https://github.com/Soumyodeep-Das/robust.git
 cd robust
+npx . init
 ```
 
-### 2. Run the Installer
+You’ll be asked to choose between:
 
-```bash
-robust init
-```
+- 🌐 Global Install (`robust` usable from anywhere)
+- 📁 Local Install (`npx robust` usable in current folder)
 
-You will be prompted to choose:
+---
 
-* 🌐 **Global install** (use `robust` from anywhere)
-* 📁 **Local install** (use `npx robust` inside project only)
+## ⚙️ Setup Guide
 
-This also runs `npm install` automatically.
+### 🔑 1. Set up `.env`
 
-### 3. Set Up `.env`
-
-Create a `.env` file in the root:
+Create a `.env` file in the root with your GitHub token:
 
 ```env
 GITHUB_TOKEN=your_personal_token_here
 ```
 
-> Your token must have `models:read` permission. [Generate token](https://github.com/settings/tokens)
+> Your token must have `models:read` permission  
+> 👉 [Generate one here](https://github.com/settings/tokens)
 
-### 4. Install GoogleTest (gtest)
+---
+
+### 🔧 2. Install GoogleTest
 
 ```bash
 sudo apt install libgtest-dev cmake
 cd /usr/src/gtest
 sudo cmake . && sudo make
-sudo cp *.a /usr/lib
+sudo cp lib/*.a /usr/lib
 ```
 
 ---
 
-## ⚙️ Usage
+## 🖥 Usage
 
-### Generate Tests
+### Launch CLI
 
 ```bash
-robust
-# OR if locally installed:
-npx robust
+robust         # if globally installed
+npx robust     # if locally installed
 ```
 
-Then select:
+### Options:
 
 ```
 ? Select an action:
-✔ Generate Test
+❯ Generate Test
   Run Test
   Retry Test
+  Retry Build
   View Logs
+  Exit
 ```
 
-Choose the `.cpp`/`.c` file you want to generate tests for, or select ALL in `/src`.
+You’ll be prompted to select individual files or all `.c/.cpp` files inside `/src`.
 
-### Run Tests (via Makefile)
+---
+
+### 🧪 Build & Run Tests
 
 ```bash
-make test
+make test   # Builds and runs tests using g++
 ```
 
-### Retry on Build Failure
+---
+
+### 🔁 Retry Failed Builds
 
 ```bash
 robust retry
 ```
 
-This will read from `logs/build.log` and retry test generation.
+Retries failed test generations by analyzing `logs/build.log`.
 
-### Keploy Integration (Optional)
+---
 
-Install Keploy:
+### ⚡ Keploy Integration (Optional)
 
 ```bash
 curl --silent -O -L https://keploy.io/install.sh && source install.sh
-```
 
-Capture tests:
-
-```bash
-keploy record -c "<your-cpp-binary>"
-```
-
-Run captured tests:
-
-```bash
-keploy test -c "<your-cpp-binary>"
+keploy record -c "./bin/test"
+keploy test -c "./bin/test"
 ```
 
 ---
 
-## 📋 Example
+## 🔍 Example
 
-### Source Code (`src/sample.cpp`):
+### `src/math.cpp`
 
 ```cpp
 int divide(int a, int b) {
@@ -168,24 +145,24 @@ int divide(int a, int b) {
 }
 ```
 
-### Generated Test (`tests/test_sample.cpp`):
+### `tests/test_math.cpp`
 
 ```cpp
 #include "gtest/gtest.h"
-#include "sample.cpp"
+#include "math.cpp"
 
-TEST(DivideTest, HandlesNormalDivision) {
+TEST(DivideTest, ValidDivision) {
   EXPECT_EQ(divide(10, 2), 5);
 }
 
-TEST(DivideTest, HandlesDivideByZero) {
+TEST(DivideTest, DivideByZero) {
   EXPECT_THROW(divide(10, 0), std::invalid_argument);
 }
 ```
 
 ---
 
-## 🛠️ Makefile
+## 🛠 Makefile (Provided)
 
 ```makefile
 all:
@@ -199,24 +176,49 @@ test: all run
 
 ---
 
+## 📁 File Structure
+
+```
+robust/
+├── bin/                  # Entry for CLI (robust command)
+├── cli/                  # init & main prompt logic
+│   ├── init.js
+│   ├── index.js
+│   └── commands/
+├── utils/                # Helpers: prompt, logging, model
+├── src/                  # Your C/C++ source files
+├── tests/                # Generated test_*.cpp files
+├── logs/                 # Logs for retry, errors
+├── Makefile
+├── .env
+├── package.json
+└── README.md
+```
+
+---
+
 ## 🤝 Contributing
 
-We welcome contributions! Please see [`CONTRIBUTING.md`](CONTRIBUTING.md) for how to get started.
+We welcome all PRs, suggestions, and improvements!  
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) to get started.
 
 ---
 
-## 📄 License
+## 📜 License
 
-MIT License. See [LICENSE](LICENSE).
+This project is licensed under the **MIT License**. See [`LICENSE`](LICENSE) for details.
 
 ---
 
-## 🌟 Star & Share
-
-If you found this useful, please consider giving us a star on GitHub and spreading the word!
+## 🌟 Support & Share
 
 ```bash
-git clone https://github.com/yourname/robust
+git clone https://github.com/Soumyodeep-Das/robust.git
 cd robust
-robust init
+npx . init
 ```
+
+If you find this useful, please ⭐ star the repo and share it with your developer friends!
+```
+
+---
