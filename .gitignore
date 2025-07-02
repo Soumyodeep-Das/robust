@@ -3,7 +3,9 @@ logs/
 .env
 src/*
 tests/*
-
+bin/*
 
 !src/sample_cpp_codebase.cpp
+!tests/unity
 !src/sample_c_codebase.c
+!bin/robust.js

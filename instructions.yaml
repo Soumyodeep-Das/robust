@@ -1,0 +1,54 @@
+language: auto  # auto-detect "c" or "cpp"
+strict: true
+
+objective: >
+  Given a C or C++ source file, perform the following:
+  1. Extract all public functions/classes and place them into a proper .h/.hpp header file.
+  2. Modify the source file to remove `main()` if present, and ensure function definitions remain valid.
+  3. Generate a corresponding unit test file (using assert.h or GoogleTest).
+  4. Ensure tests include the generated header file, not the source file directly.
+
+c:
+  framework: unity
+  details:
+    - Use the Unity framework for all C tests (https://github.com/ThrowTheSwitch/Unity).
+    - Create `<original_filename>.h` containing function prototypes.
+    - Modify `<original_filename>.c` to include only function definitions (remove main if needed).
+    - Generate `test_<original_filename>.c` using `#include "unity/unity.h"` and `#include "<original_filename>.h"`.
+    - Every test file must define `setUp` and `tearDown` (even if empty), use only `TEST_ASSERT_*` macros (not assert), and register all tests with `RUN_TEST` in a single `main()` function.
+
+cpp:
+  framework: googletest
+  details:
+    - Use `gtest/gtest.h` for unit testing.
+    - Create `<original_filename>.hpp` with all public class/method declarations.
+    - Modify `<original_filename>.cpp` to only contain method definitions.
+    - Do not include `main()` in the source if generating tests.
+    - Generate `test_<original_filename>.cpp` using `#include "<original_filename>.hpp"`.
+
+build_fixes:
+  if_fails:
+    - Use build logs to detect:
+        - missing includes
+        - multiple definitions of main
+        - linkage/type issues
+    - Fix includes, convert inline implementations to external, add missing headers.
+    - Rebuild and retry test generation after fixing.
+
+  if_passes:
+    - Run `gcov` or `lcov` to collect test coverage.
+    - Send uncovered lines/functions back to LLM.
+    - Ask the LLM to refine the test file for higher coverage.
+    - Eliminate any redundant or duplicate tests.
+
+output:
+  c:
+    generate:
+      - <original_filename>.h
+      - <original_filename>.c
+      - test_<original_filename>.c
+  cpp:
+    generate:
+      - <original_filename>.hpp
+      - <original_filename>.cpp
+      - test_<original_filename>.cpp
