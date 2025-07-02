@@ -1,6 +1,5 @@
 import inquirer from "inquirer";
 import { execSync } from "child_process";
-import path from "path";
 
 async function init() {
   const { scope } = await inquirer.prompt([
@@ -34,4 +33,7 @@ async function init() {
   }
 }
 
-init();
+// ✅ Only run init if we're not already in postinstall loop
+if (process.env.ROBUST_INIT_DONE !== "true") {
+  init();
+}
