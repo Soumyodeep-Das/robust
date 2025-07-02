@@ -3,3 +3,7 @@ logs/
 .env
 src/*
 tests/*
+
+
+!src/sample_cpp_codebase.cpp
+!src/sample_c_codebase.c

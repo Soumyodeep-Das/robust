@@ -17,7 +17,7 @@ async function init() {
   if (scope === "global") {
     try {
       console.log("📦 Installing globally...");
-      execSync("npm install -g .", { stdio: "inherit" });
+      execSync("sudo npm install -g .", { stdio: "inherit" });
       console.log("✅ You can now run `robust` from anywhere!");
     } catch (err) {
       console.error("❌ Global install failed:", err.message);
@@ -25,7 +25,7 @@ async function init() {
   } else {
     try {
       console.log("📦 Installing locally...");
-      execSync("npm install", { stdio: "inherit" });
+      execSync("sudo npm install", { stdio: "inherit" });
       console.log("✅ Installed locally. Use `npx robust` inside this folder.");
     } catch (err) {
       console.error("❌ Local install failed:", err.message);
