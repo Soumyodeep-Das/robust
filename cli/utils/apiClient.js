@@ -5,7 +5,7 @@ dotenv.config();
 
 const token = process.env.GITHUB_TOKEN;
 const endpoint = "https://models.github.ai/inference";
-const model = "xai/grok-3";
+const model = "mistral-ai/mistral-medium-2505";
 
 const client = ModelClient(endpoint, new AzureKeyCredential(token));
 
@@ -15,7 +15,13 @@ export async function callLLM(prompt) {
       messages: [
         {
           role: "system",
-          content: "You are a strict, reliable, and security-focused unit test generator for C/C++ code. Output only the test file content with proper formatting.",
+          content: `You are a strict, reliable, and security-focused unit test generator for C/C++ code. 
+For every request, output all required files in the following format:
+
+/*** File: <filename> ***/
+<file content>
+
+Do this for each file (header, source, and test) required by the user's instructions. Do not include any explanations or extra text.`,
         },
         {
           role: "user",

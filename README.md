@@ -14,12 +14,12 @@ Built for automation, edge-case coverage, and modern dev flows.
 ## 🚀 Features
 
 - ✨ AI-powered unit test generation
-- 🧪 Generates `test_*.cpp` files using **GoogleTest**
-- ⌨️ Works with `.c` and `.cpp` codebases
+- 🧪 Generates `test_*.c` files using **Unity** for C
+- 🧪 Generates `test_*.cpp` files using **GoogleTest** for C++
+- ⌨️ Works with both `.c` and `.cpp` codebases
 - 💬 Interactive CLI via `inquirer`
 - 🔁 Retry failed builds using logs
-- ⚙️ Optional **Keploy** integration for test validation
-- 🛠 Makefile support for building tests
+- 🛠 Makefile & CLI support for building tests (C and C++)
 - 🔐 GitHub Model Inference API integration
 
 ---
@@ -108,7 +108,15 @@ You’ll be prompted to select individual files or all `.c/.cpp` files inside `/
 ### 🧪 Build & Run Tests
 
 ```bash
-make test   # Builds and runs tests using g++
+make run_c         # Builds and runs C tests (Unity, bin/test_output_c)
+make run_cpp       # Builds and runs C++ tests (GoogleTest, bin/test_output_cpp)
+make run           # Builds and runs both C and C++ tests (if present)
+```
+
+Or use the CLI for a unified experience:
+
+```bash
+robust             # Launch CLI, select "Run Test" for C or C++
 ```
 
 ---
@@ -136,7 +144,41 @@ keploy test -c "./bin/test"
 
 ## 🔍 Example
 
-### `src/math.cpp`
+### Example: Unity-based C Test
+
+#### `src/sample_c_codebase.c`
+
+```c
+#include "sample_c_codebase.h"
+// ... your C functions ...
+```
+
+#### `tests/test_sample_c_codebase.c`
+
+```c
+#include "unity/unity.h"
+#include "sample_c_codebase.h"
+
+void setUp(void) {}
+void tearDown(void) {}
+
+void test_validate_email() {
+    TEST_ASSERT_TRUE(validate_email("test@example.com"));
+    TEST_ASSERT_FALSE(validate_email("invalid@email"));
+}
+
+int main(void) {
+    UNITY_BEGIN();
+    RUN_TEST(test_validate_email);
+    return UNITY_END();
+}
+```
+
+---
+
+### Example: GoogleTest C++ Test
+
+#### `src/math.cpp`
 
 ```cpp
 int divide(int a, int b) {
@@ -145,11 +187,11 @@ int divide(int a, int b) {
 }
 ```
 
-### `tests/test_math.cpp`
+#### `tests/test_math.cpp`
 
 ```cpp
 #include "gtest/gtest.h"
-#include "math.cpp"
+#include "math.hpp"
 
 TEST(DivideTest, ValidDivision) {
   EXPECT_EQ(divide(10, 2), 5);
@@ -165,13 +207,26 @@ TEST(DivideTest, DivideByZero) {
 ## 🛠 Makefile (Provided)
 
 ```makefile
-all:
-	g++ -std=c++17 -isystem /usr/include/gtest -pthread tests/test_*.cpp -lgtest -lgtest_main -o bin/test
+# Build and run C tests (Unity)
+run_c: bin/test_output_c
+	@echo "Running C tests (Unity):"
+	./bin/test_output_c || true
 
-run:
-	./bin/test
+bin/test_output_c: $(SRC_C_FILES) $(TEST_C_FILES) tests/unity/unity.c
+	@mkdir -p bin logs
+	gcc -Wall -Wextra -Iinclude -Isrc -Itests -Itests/unity $^ -o bin/test_output_c 2> logs/build.log
 
-test: all run
+# Build and run C++ tests (GoogleTest)
+run_cpp: bin/test_output_cpp
+	@echo "Running C++ tests (GoogleTest):"
+	./bin/test_output_cpp || true
+
+bin/test_output_cpp: $(SRC_CPP_FILES) $(TEST_CPP_FILES)
+	@mkdir -p bin logs
+	g++ -std=c++17 -Wall -Wextra -Iinclude -Isrc -pthread $^ -lgtest -lgtest_main -o bin/test_output_cpp 2> logs/build.log
+
+# Run both
+run: run_cpp run_c
 ```
 
 ---
@@ -180,20 +235,38 @@ test: all run
 
 ```
 robust/
-├── bin/                  # Entry for CLI (robust command)
-├── cli/                  # init & main prompt logic
+├── bin/                  # Test binaries: test_output_c (C), test_output_cpp (C++)
+├── cli/                  # CLI logic and commands
 │   ├── init.js
 │   ├── index.js
 │   └── commands/
 ├── utils/                # Helpers: prompt, logging, model
 ├── src/                  # Your C/C++ source files
-├── tests/                # Generated test_*.cpp files
+├── tests/                # Generated test_*.c (Unity) and test_*.cpp (GoogleTest) files
+│   └── unity/            # Unity C test framework (unity.h, unity.c, unity_internals.h)
 ├── logs/                 # Logs for retry, errors
 ├── Makefile
 ├── .env
 ├── package.json
 └── README.md
 ```
+
+---
+
+## 🛠 Troubleshooting & Regenerating Tests
+
+### Common C Test Build Errors (Unity)
+- **undefined reference to `setUp`/`tearDown`**: Your test file must define empty `void setUp(void) {}` and `void tearDown(void) {}` functions.
+- **Missing Unity includes or macros**: All C tests must include `#include "unity/unity.h"` and use `TEST_ASSERT_*` macros, not `assert.h`.
+- **Multiple `main()` functions**: Only one `main()` per C test file, registering all tests with `UNITY_BEGIN`, `RUN_TEST`, and `UNITY_END`.
+
+### Common C++ Test Build Errors (GoogleTest)
+- **Missing `gtest/gtest.h` include**: All C++ tests must include GoogleTest headers and use `TEST`/`TEST_F` macros.
+- **Custom/main functions in test files**: Let GoogleTest manage the test runner; do not define your own `main()`.
+
+### How to Regenerate or Fix Tests
+- Use the CLI's `Retry Build` or `Retry Test` options to automatically fix test files based on build logs.
+- Edit test files to match the examples above, then re-run `make run_c` or `make run_cpp`.
 
 ---
 

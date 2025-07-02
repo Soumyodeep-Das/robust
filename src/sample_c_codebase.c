@@ -1,36 +1,22 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdbool.h>
-#include <ctype.h>
-#include <time.h>
-
-#define MAX_USERS 100
-#define MAX_NAME_LEN 50
-#define MAX_EMAIL_LEN 100
-
-// -------------------------- Data Structures -----------------------------
-typedef struct {
-    int day, month, year;
-} Date;
-
-typedef struct {
-    int id;
-    char name[MAX_NAME_LEN];
-    char email[MAX_EMAIL_LEN];
-    Date dob;
-    bool isActive;
-    float balance;
-} User;
+#include "sample_c_codebase.h"
 
 User database[MAX_USERS];
 int userCount = 0;
 
-// -------------------------- Utility Functions -----------------------------
 bool validate_email(const char* email) {
+    if (!email) return false;
     const char* at = strchr(email, '@');
-    const char* dot = strrchr(email, '.');
-    return at && dot && at < dot;
+    if (!at || at == email) return false; // must have one '@' and not at start
+    if (strchr(at + 1, '@')) return false; // only one '@'
+    const char* dot = strchr(at + 1, '.');
+    if (!dot) return false; // must have at least one '.' after '@'
+    if (dot == at + 1) return false; // no '.' immediately after '@'
+    if (*(dot + 1) == '\0') return false; // must be something after the dot
+    if (strstr(email, "..")) return false; // no consecutive dots
+    // local part (before '@') and domain part (after '@') must not be empty
+    if (at - email < 1) return false;
+    if (strlen(at + 1) < 3) return false; // minimum 'a.b'
+    return true;
 }
 
 bool is_leap_year(int year) {
@@ -45,7 +31,6 @@ bool validate_date(Date d) {
     return d.day <= days_in_month[d.month];
 }
 
-// -------------------------- Core Logic -----------------------------
 int add_user(const char* name, const char* email, Date dob, float balance) {
     if (userCount >= MAX_USERS) return -1;
     if (!validate_email(email) || !validate_date(dob)) return -2;
@@ -90,7 +75,6 @@ float withdraw(int id, float amount) {
     return u->balance;
 }
 
-// -------------------------- Debug / Display -----------------------------
 void print_user(const User* u) {
     if (!u) return;
     printf("ID: %d\nName: %s\nEmail: %s\nDOB: %02d-%02d-%04d\nActive: %s\nBalance: $%.2f\n\n",
@@ -104,21 +88,3 @@ void list_all_users() {
         print_user(&database[i]);
     }
 }
-
-// -------------------------- Main (for demo) -----------------------------
-#ifdef DEMO
-int main() {
-    Date d1 = {12, 10, 1990};
-    Date d2 = {30, 2, 2000};
-
-    printf("Add User 1: %d\n", add_user("Alice", "alice@example.com", d1, 100.0));
-    printf("Add User 2 (invalid): %d\n", add_user("Bob", "bob_at_email", d2, 50.0));
-
-    deposit(1, 150.0);
-    withdraw(1, 50.0);
-    deactivate_user(1);
-
-    list_all_users();
-    return 0;
-}
-#endif
