@@ -13,14 +13,16 @@ Built for automation, edge-case coverage, and modern dev flows.
 
 ## 🚀 Features
 
-- ✨ AI-powered unit test generation
-- 🧪 Generates `test_*.c` files using **Unity** for C
-- 🧪 Generates `test_*.cpp` files using **GoogleTest** for C++
-- ⌨️ Works with both `.c` and `.cpp` codebases
-- 💬 Interactive CLI via `inquirer`
-- 🔁 Retry failed builds using logs
-- 🛠 Makefile & CLI support for building tests (C and C++)
-- 🔐 GitHub Model Inference API integration
+- ✨ AI-powered unit test generation for C and C++
+- 🔍 **Recursive source discovery**: No need to move files—finds `.cpp`/`.cc` files in any project structure
+- 🧪 Generates `test_*.cpp` (GoogleTest) and `test_*.c` (Unity) with header/source/test split
+- 🗂️ Output auto-organized into `src/`, `tests/`, `include/`, `logs/`, `coverage/`
+- ⚡ **One-command automation**: `robust generate --all` for instant test generation
+- 🏗️ **Build, run, and test**: `robust run` automates CMake or build.sh and runs all tests
+- 🔄 **Refinement loop**: `robust refine` sends failed builds/tests to LLM for auto-repair
+- 📈 **Code coverage integration**: `robust coverage` collects and uses gcov/lcov data to improve tests
+- 🛠️ **CMake auto-integration**: `robust update-cmake` adds new tests to your build config
+- 💬 Interactive CLI menu for all commands
 
 ---
 
@@ -44,7 +46,8 @@ Built for automation, edge-case coverage, and modern dev flows.
 ```bash
 git clone https://github.com/Soumyodeep-Das/robust.git
 cd robust
-npx . init
+npm install
+npm link   # (optional, for global usage)
 ```
 
 You’ll be asked to choose between:
@@ -77,6 +80,59 @@ cd /usr/src/gtest
 sudo cmake . && sudo make
 sudo cp lib/*.a /usr/lib
 ```
+
+---
+
+### 🧩 2. Using robust in a C++ Project (Any Repo)
+
+#### **Step-by-step workflow:**
+
+1. **Clone your target C++ repository:**
+   ```bash
+   git clone <repo_url>
+   cd <repo>
+   ```
+2. **(Optional) Initialize robust config:**
+   ```bash
+   robust init --project <your_project_name>
+   ```
+3. **Generate tests for all source files:**
+   ```bash
+   robust generate --all
+   ```
+   - Recursively finds all `.cpp`/`.cc` files (ignores `test/`, `third_party/`, etc.)
+   - Generates header, cleaned source, and GoogleTest/Unity test files into `src/` and `tests/`
+4. **Update your CMake config:**
+   ```bash
+   robust update-cmake
+   ```
+5. **Build and run tests:**
+   ```bash
+   robust run
+   ```
+   - Runs `build.sh` or CMake/Make as appropriate
+   - Executes all test binaries, saves logs
+6. **Refine tests after build/test failures:**
+   ```bash
+   robust refine
+   ```
+   - Sends failures/logs to LLM for suggestions/fixes (scaffolded for future automation)
+7. **Collect and improve code coverage:**
+   ```bash
+   robust coverage
+   ```
+   - Runs `gcov`/`lcov`, parses coverage, prompts LLM to improve tests
+
+**Or use the interactive menu:**
+```bash
+robust
+```
+And select actions from:
+- Generate Test
+- Run Project
+- Refine Test
+- Coverage
+- Update CMake
 
 ---
 
@@ -292,6 +348,3 @@ npx . init
 ```
 
 If you find this useful, please ⭐ star the repo and share it with your developer friends!
-```
-
----
