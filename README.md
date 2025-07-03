@@ -133,9 +133,6 @@ And select actions from:
 - Refine Test
 - Coverage
 - Update CMake
-- ...
-
----
 
 ---
 
@@ -351,4 +348,3 @@ npx . init
 ```
 
 If you find this useful, please ⭐ star the repo and share it with your developer friends!
-```
