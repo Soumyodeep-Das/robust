@@ -4,8 +4,21 @@ import ora from "ora";
 import { fileURLToPath } from "url";
 import { buildPrompt, promptSourceFile } from "../utils/promptBuilder.js";
 import { callLLM } from "../utils/apiClient.js";
+import { findSourceFiles, DEFAULT_EXCLUDE_DIRS } from "../utils/fileUtils.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// Parse CLI args for --all and --path
+function parseGenerateArgs() {
+  const args = process.argv.slice(3); // skip node, robust, generate
+  let all = false;
+  let pathArg = null;
+  for (let i = 0; i < args.length; ++i) {
+    if (args[i] === "--all") all = true;
+    if (args[i] === "--path" && args[i+1]) pathArg = args[i+1];
+  }
+  return { all, pathArg };
+}
 
 function detectLanguage(filename) {
   return filename.endsWith(".c") ? "c" : "cpp";
@@ -80,7 +93,26 @@ function extractYamlInstructions(language) {
 }
 
 export default async function generateTest() {
-  const selectedFiles = await promptSourceFile();
+  const { all, pathArg } = parseGenerateArgs();
+  let selectedFiles = [];
+  if (all) {
+    selectedFiles = await findSourceFiles(process.cwd());
+    if (selectedFiles.length === 0) {
+      console.error("No .cpp or .cc files found in project.");
+      return;
+    }
+    console.log(`Found ${selectedFiles.length} source files (recursive).`);
+  } else if (pathArg) {
+    const absPath = path.isAbsolute(pathArg) ? pathArg : path.join(process.cwd(), pathArg);
+    selectedFiles = await findSourceFiles(absPath);
+    if (selectedFiles.length === 0) {
+      console.error(`No .cpp or .cc files found in ${absPath}.`);
+      return;
+    }
+    console.log(`Found ${selectedFiles.length} source files in ${absPath}.`);
+  } else {
+    selectedFiles = await promptSourceFile();
+  }
 
   for (const inputPath of selectedFiles) {
     if (!fs.existsSync(inputPath)) {
