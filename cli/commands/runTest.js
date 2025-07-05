@@ -1,6 +1,7 @@
 import { execSync, spawnSync } from "child_process";
 import readline from "readline";
 import inquirer from "inquirer";
+import { promptSourceFile } from "../utils/promptBuilder.js";
 import ora from "ora";
 import retryBuild from "./retryBuild.js";
 import fs from "fs";
@@ -21,19 +22,17 @@ function askRetryQuestion(question) {
 }
 
 export async function runTest() {
-  const testChoices = getTestFileChoices();
-
-  const { chosenTest } = await inquirer.prompt([
-    {
-      type: "list",
-      name: "chosenTest",
-      message: "📂 Choose which test file to run:",
-      choices: [
-        { name: "All tests", value: "ALL" },
-        ...testChoices
-      ],
-    },
-  ]);
+  // Use the new promptSourceFile logic for test selection
+  let chosenTest = null;
+  let testFiles = await promptSourceFile(path.resolve("tests"));
+  if (testFiles.length === 1) {
+    chosenTest = path.basename(testFiles[0]);
+  } else if (testFiles.length > 1) {
+    chosenTest = "ALL";
+  } else {
+    console.log("No test files selected.");
+    return;
+  }
 
   const compileCommand = buildCompileCommand(chosenTest);
 
@@ -144,7 +143,7 @@ export async function runTest() {
 
     const answer = await askRetryQuestion("🔁 Retry with AI fix? (Y/n): ");
     if (answer === "y" || answer === "yes") {
-      await retryBuild(chosenTest);
+      await retryBuild(testFiles && testFiles.length === 1 ? testFiles[0] : chosenTest);
 
       const rerun = await askRetryQuestion("▶️ Re-run test after fix? (Y/n): ");
       if (rerun === "y" || rerun === "yes") {
@@ -182,28 +181,20 @@ function buildCompileCommand(chosenTest) {
     return `${cppCmd} && ${cCmd}`;
   } else if (chosenTest.endsWith('.c')) {
     // Build C test binary
-    const testFilePath = `tests/${chosenTest}`;
+    const testFilePath = chosenTest.startsWith('/') ? chosenTest : path.resolve('tests', chosenTest);
     const relatedSrc = inferSourceFileFromTest(testFilePath);
     return `${cBaseCommand} ${relatedSrc} ${testFilePath} ${cUnitySrc} ${cOutputPath}`;
-  } else if (chosenTest.endsWith('.cpp')) {
+  } else if (chosenTest.endsWith('.cpp') || chosenTest.endsWith('.cc')) {
     // Build C++ test binary
-    const testFilePath = `tests/${chosenTest}`;
+    const testFilePath = chosenTest.startsWith('/') ? chosenTest : path.resolve('tests', chosenTest);
     const relatedSrc = inferSourceFileFromTest(testFilePath);
     return `${cppBaseCommand} ${relatedSrc} ${testFilePath} ${gtestFlags} ${cppOutputPath}`;
   } else {
-    throw new Error('Unknown test file type for buildCompileCommand');
+    throw new Error(`Unknown test file type for buildCompileCommand: ${chosenTest}`);
   }
 }
 
-function getTestFileChoices() {
-  const testDir = path.join("tests");
-  if (!fs.existsSync(testDir)) return [];
-
-  return fs
-    .readdirSync(testDir)
-    .filter((f) => f.endsWith(".cpp") || f.endsWith(".c"))
-    .map((f) => ({ name: f, value: f }));
-}
+// Removed getTestFileChoices; replaced by promptSourceFile logic.
 
 function inferSourceFileFromTest(testFilePath) {
   const baseName = path.basename(testFilePath).replace(/^test_/, "");
