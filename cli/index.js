@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 import inquirer from "inquirer";
+import figlet from "figlet";
+import chalk from "chalk";
 import generateTest from "./commands/generateTest.js";
 import runTest from "./commands/runTest.js";
 import retryBuild from "./commands/retryBuild.js";
@@ -28,6 +30,7 @@ const menu = async () => {
         "View Logs",
         "Exit"
       ],
+      loop: false
     },
   ]);
 
@@ -64,4 +67,20 @@ const menu = async () => {
   }
 };
 
-menu();
+import { ExitPromptError } from "@inquirer/core";
+
+(async () => {
+  try {
+    // Show large, bold ROBUST banner
+    const banner = figlet.textSync("ROBUST", { horizontalLayout: "default", verticalLayout: "default" });
+    console.log(chalk.bold.green(banner));
+    await menu();
+  } catch (err) {
+    if (err instanceof ExitPromptError) {
+      console.log("Aborting operations.");
+      process.exit(0);
+    } else {
+      throw err;
+    }
+  }
+})();

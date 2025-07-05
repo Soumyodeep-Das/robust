@@ -2,33 +2,75 @@ import fs from "fs";
 import path from "path";
 import inquirer from "inquirer";
 
-export async function promptSourceFile() {
-  const srcDir = path.resolve("src");
-  const files = fs.readdirSync(srcDir).filter(file =>
-    file.endsWith(".cpp") || file.endsWith(".c")
-  );
+export async function promptSourceFile(startDir = process.cwd()) {
+  let currentDir = path.resolve(startDir);
+  while (true) {
+    // List files and directories in currentDir
+    const entries = fs.readdirSync(currentDir, { withFileTypes: true });
+    const files = entries.filter(e => e.isFile() && (e.name.endsWith('.c') || e.name.endsWith('.cpp') || e.name.endsWith('.cc')));
+    const dirs = entries.filter(e => e.isDirectory());
 
-  const choices = [
-    ...files.map(file => ({ name: file, value: path.join(srcDir, file) })),
-    new inquirer.Separator(),
-    { name: "🗂 All files in /src", value: "ALL" }
-  ];
-
-  const { selectedFile } = await inquirer.prompt([
-    {
-      type: "list",
-      name: "selectedFile",
-      message: "📄 Choose a C/C++ file to generate tests for:",
-      choices
+    const choices = [];
+    if (currentDir !== path.parse(currentDir).root) {
+      choices.push({ name: '⬆️  Go up one directory', value: '..' });
     }
-  ]);
+    dirs.forEach(dir => {
+      choices.push({ name: `📁 ${dir.name}/`, value: { type: 'dir', name: dir.name } });
+    });
+    files.forEach(file => {
+      choices.push({ name: `📄 ${file.name}`, value: { type: 'file', name: file.name } });
+    });
+    if (files.length > 0) {
+      choices.push(new inquirer.Separator());
+      choices.push({ name: `🗂 All .c/.cpp/.cc files in ${path.relative(startDir, currentDir) || '.'}`, value: { type: 'all' } });
+    }
+    if (choices.length === 0) {
+      choices.push({ name: 'No C/C++ files or subdirectories found here', value: '__none__', disabled: true });
+    }
 
-  if (selectedFile === "ALL") {
-    return files.map(file => path.join(srcDir, file));
+    const { selected } = await inquirer.prompt([
+      {
+        type: 'list',
+        name: 'selected',
+        message: `Choose a directory or C/C++ file in: ${path.relative(startDir, currentDir) || '.'}`,
+        choices
+      }
+    ]);
+
+    if (selected === '..') {
+      currentDir = path.dirname(currentDir);
+      continue;
+    }
+    if (selected && selected.type === 'dir') {
+      currentDir = path.join(currentDir, selected.name);
+      continue;
+    }
+    if (selected && selected.type === 'file') {
+      return [path.join(currentDir, selected.name)];
+    }
+    if (selected && selected.type === 'all') {
+      // Recursively find all .c/.cpp/.cc files in currentDir
+      const allFiles = [];
+      function walk(dir) {
+        const ents = fs.readdirSync(dir, { withFileTypes: true });
+        for (const ent of ents) {
+          if (ent.isDirectory()) {
+            walk(path.join(dir, ent.name));
+          } else if (ent.name.endsWith('.c') || ent.name.endsWith('.cpp') || ent.name.endsWith('.cc')) {
+            allFiles.push(path.join(dir, ent.name));
+          }
+        }
+      }
+      walk(currentDir);
+      if (allFiles.length === 0) {
+        console.log('No C/C++ files found in this directory or subdirectories.');
+        continue;
+      }
+      return allFiles;
+    }
   }
-
-  return [selectedFile];
 }
+
 
 export function buildPrompt(sourceCode, filename = "main.cpp") {
   return `

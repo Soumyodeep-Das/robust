@@ -1,14 +1,29 @@
 import fs from "fs-extra";
 import path from "path";
 import { callLLM } from "../utils/apiClient.js";
+import { promptSourceFile } from "../utils/promptBuilder.js";
+import ora from "ora";
 
 export default async function retryTest() {
-  const srcPath = path.join("src", "main.cpp");
-  const testPath = path.join("tests", "test_main.cpp");
-  const logPath = path.join("logs", "build.log");
+  // Prompt user for source file
+  const srcFiles = await promptSourceFile(path.resolve("src"));
+  if (!srcFiles.length) {
+    console.error("❌ No source files selected.");
+    return;
+  }
+  const srcPath = srcFiles[0];
 
+  // Prompt user for test file
+  const testFiles = await promptSourceFile(path.resolve("tests"));
+  if (!testFiles.length) {
+    console.error("❌ No test files selected.");
+    return;
+  }
+  const testPath = testFiles[0];
+
+  const logPath = path.join("logs", "build.log");
   if (!fs.existsSync(srcPath) || !fs.existsSync(logPath)) {
-    console.error("❌ Required files missing. Ensure you have `src/main.cpp` and `logs/build.log`.");
+    console.error("❌ Required files missing. Ensure you have the selected source file and logs/build.log.");
     return;
   }
 
@@ -27,15 +42,17 @@ However, the build failed with the following error log:
 ${logs}
 \`\`\`
 
-Please regenerate the test file \`test_main.cpp\` in a corrected way so that it compiles and passes. Avoid any test_main() if already in main.cpp.
+Please regenerate the test file \`${path.basename(testPath)}\` in a corrected way so that it compiles and passes. Avoid any test_main() if already in main.cpp.
 Output only the test file content.
 `;
 
+  const spinner = ora('🔁 Retrying test generation using AI...').start();
   try {
     const improvedTest = await callLLM(prompt);
     fs.writeFileSync(testPath, improvedTest);
-    console.log("✅ Retried test written to:", testPath);
+    spinner.succeed(`✅ Retried test written to: ${testPath}`);
   } catch (err) {
-    console.error("❌ Retry failed:", err.message);
+    spinner.fail('❌ Retry failed: ' + err.message);
   }
 }
+

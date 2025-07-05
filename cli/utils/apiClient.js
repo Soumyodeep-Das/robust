@@ -1,9 +1,24 @@
 import ModelClient, { isUnexpected } from "@azure-rest/ai-inference";
 import { AzureKeyCredential } from "@azure/core-auth";
-import dotenv from "dotenv";
-dotenv.config();
+import * as dotenvFlow from "dotenv-flow";
+import path from "path";
+import { fileURLToPath } from "url";
 
+// Get __dirname (ESM-safe)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Always load .env from project root, no matter where `robust` is called from
+const projectRoot = path.resolve(__dirname, "../../");
+dotenvFlow.config({ path: projectRoot, silent: true }); // silent = suppress missing .env warning
+
+// Validate and extract token
 const token = process.env.GITHUB_TOKEN;
+if (!token || token.trim() === "") {
+  throw new Error("Missing API key: Set GITHUB_TOKEN in your .env file.");
+}
+
+// Configure GitHub-hosted model
 const endpoint = "https://models.github.ai/inference";
 const model = "mistral-ai/mistral-medium-2505";
 
