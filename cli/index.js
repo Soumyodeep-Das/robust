@@ -20,12 +20,12 @@ const menu = async () => {
       message: "Select an action:",
       choices: [
         "Generate Test",
+        "Run Test",
+        "Retry Test",
         "Run Project",
         "Refine Test",
         "Coverage",
         "Update CMake",
-        "Run Test",
-        "Retry Test",
         "Retry Build",
         "View Logs",
         "Exit"
@@ -38,6 +38,12 @@ const menu = async () => {
     case "Generate Test":
       await generateTest();
       break;
+    case "Run Test":
+      await runTest();
+      break;
+    case "Retry Test":
+      await retryTest();
+      break;  
     case "Run Project":
       await runProject();
       break;
@@ -49,12 +55,6 @@ const menu = async () => {
       break;
     case "Update CMake":
       await updateCMake();
-      break;
-    case "Run Test":
-      await runTest();
-      break;
-    case "Retry Test":
-      await retryTest();
       break;
     case "Retry Build":
       await retryBuild();

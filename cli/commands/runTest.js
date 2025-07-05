@@ -22,6 +22,16 @@ function askRetryQuestion(question) {
 }
 
 export async function runTest() {
+  // Ensure logs directory and build.log file exist
+  const logsDir = path.resolve("logs");
+  const buildLog = path.join(logsDir, "build.log");
+
+  if (!fs.existsSync(logsDir)) {
+    fs.mkdirSync(logsDir, { recursive: true });
+  }
+  if (!fs.existsSync(buildLog)) {
+    fs.writeFileSync(buildLog, "");
+  }
   // Use the new promptSourceFile logic for test selection
   let chosenTest = null;
   let testFiles = await promptSourceFile(path.resolve("tests"));
