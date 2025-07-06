@@ -20,7 +20,7 @@ if (!token || token.trim() === "") {
 
 // Configure GitHub-hosted model
 const endpoint = "https://models.github.ai/inference";
-const model = "xai/grok-3-mini";
+const model = "openai/gpt-4.1-mini";
 
 const client = ModelClient(endpoint, new AzureKeyCredential(token));
 
