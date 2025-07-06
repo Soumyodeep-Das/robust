@@ -10,6 +10,68 @@
 Built for automation, edge-case coverage, and modern dev flows.
 
 ---
+![image](https://github.com/user-attachments/assets/cd98f860-5e89-407f-b16c-816780f56899)
+
+<details>
+<summary><strong>Keploy Assignment Summary (click to expand)</strong></summary>
+
+### Screenshots
+
+<!-- Paste your screenshots below. You can use markdown image syntax or drag-and-drop images here in GitHub. -->
+- **Generated Tests:**
+  
+  ![Generated Tests Screenshot-01](https://github.com/user-attachments/assets/330c01d8-a1af-4633-8c4f-7ca3d0279e52)
+  ![Generated Tests Screenshot-02](https://github.com/user-attachments/assets/19c95ed4-26ba-41a0-be80-82eb99bda395)
+  ![Generated Tests Screenshot-03](https://github.com/user-attachments/assets/b459fe6d-bb32-4705-95c2-1d122062bd5b)
+  ![Generated Tests Screenshot-04](https://github.com/user-attachments/assets/7a3e7670-3a83-4d99-b4a1-b798d694abfb)
+  ![Generated Tests Screenshot-05](https://github.com/user-attachments/assets/2097d360-650f-4e4e-bf9a-dc78073eb08b)
+
+
+
+
+
+
+- **Test Pass Report:**
+  
+  ![Test Pass Report Screenshot-01](https://github.com/user-attachments/assets/4246f3f3-00f3-4343-8ce9-986fb6044333)
+  ![Test Pass Report Screenshot-02](https://github.com/user-attachments/assets/b9fc4719-d708-4d5e-8d05-c7b9e2a31466)
+  ![Test Pass Report Screenshot-03](https://github.com/user-attachments/assets/dee26a93-391b-4e56-8018-091e0171f570)
+  ![Test Pass Report Screenshot-04](https://github.com/user-attachments/assets/7f8802f5-c8a9-4a37-9607-fccea7a4df07)
+
+  
+
+- **Coverage Report:**
+  
+  ![Coverage Report Screenshot](https://github.com/user-attachments/assets/cbfb8a8a-7e11-46f6-b6be-532c222f348f)
+
+
+
+---
+
+### Approach & Test Coverage Results
+
+- **Test Generation:**
+  - Unit tests were generated for the C++ codebase using an LLM, guided by strict YAML instructions (see `instructions.yaml`).
+  - The tool automatically created Google Test-based tests for all public classes and functions.
+
+- **Refinement:**
+  - Tests were refined iteratively based on build and test feedback, removing duplicates and improving coverage.
+  - The LLM was prompted with build/test logs and coverage gaps to suggest improvements.
+
+- **Coverage Measurement:**
+  - GNU `lcov` was used to collect code coverage after running all generated tests.
+  - Coverage results are summarized in the screenshot above and in `coverage/coverage_report.txt`.
+
+- **Repeatability:**
+  - The process is fully automated and repeatable using the provided CLI commands.
+
+- **Deliverables:**
+  - All generated tests are in the `tests/` directory.
+  - Coverage data and LLM suggestions are in the `coverage/` directory.
+  - YAML instructions are in `instructions.yaml`.
+
+</details>
+
 
 ## 🚀 Features
 
