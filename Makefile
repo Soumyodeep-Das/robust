@@ -44,6 +44,13 @@ $(C_OUTPUT): $(SRC_C_FILES) $(TEST_C_FILES) $(UNITY_SRC)
 	@mkdir -p $(BIN_DIR) $(LOG_DIR)
 	$(CC) $(CFLAGS) $(UNITY_INC) $^ -o $@ 2> $(LOG_DIR)/build.log
 
+# Add a coverage target (optional)
+coverage: run_cpp
+	@echo "Generating coverage report for C++..."
+	@gcov $(SRC_CPP_FILES) > $(LOG_DIR)/coverage_cpp.log || true
+	@echo "Generating coverage report for C..."
+	@gcov $(SRC_C_FILES) > $(LOG_DIR)/coverage_c.log || true
+	
 clean:
 	rm -rf $(BIN_DIR) $(LOG_DIR)
 
